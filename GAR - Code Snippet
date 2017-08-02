@@ -1,0 +1,206 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import org.apache.http.HttpRequest;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.BeforeSuite;
+
+public class GitHubAccess {
+	
+	
+	public static String loginLink = "//a[@href='https://login.salesforce.com/?locale=in']";
+	public static String username = "//input[@id='username']";
+	public static String password = "//input[@id='password']";
+	public static String loginButton = "//input[@id='Login']";
+	public static String usernameValue = "paul.felix@corp.sysco.com.intqa";
+	public static String passwordValue = "Welcome2";
+	public static String URL = "https://test.salesforce.com";
+	public static String ddHomePage = "//span[@id='tsidLabel']";
+	public static String gitHubLink = "Github Access Request";
+	public static String giHubHomePageNewbtn = "//input[@title='New']";
+	public static String txtSalesForceUser = "//input[@title='SalesForce User']";
+	public static String txtGitHubUserName = "//input[@tabindex='3']";
+	public static String txtGitHubRepoName = "//input[@tabindex='4']";
+	public static String chkboxNewGitHubRepo = "//input[@tabindex='5']";
+	public static String valueSalesForceUser = "Felix Paul";
+	public static List<String> valueGitHubUserName = new ArrayList<String>();
+	//public static String[] valueGitHubUserName = null;
+	//public static String valueRepoName = "test111";
+	public static List<String> valueRepoName = new ArrayList<String>();
+	public static String ddAccessLevel = "//select[@tabindex='6']";
+	public static String ddDuration = "//select[@tabindex='7']";
+	public static String btnSave = "//input[@name='save']";
+	public static String btnSubmitForApproval = "//input[@name='piSubmit']";
+	public static String btnLogout = "//div[@id='userNav-arrow']";
+	public static String MacOS = null;
+	public static String filePath = "/Users/FelixPaul/Downloads";
+	public static String fileName = "GitHubAccountDetailstest.xlsx";
+	public static String usrsheetName = "Details";
+	public static String reposheetName = "Repo";
+	
+	 
+	public static void main(String[]args) throws IOException{
+		
+		System.setProperty("webdriver.chrome.driver", "/Users/FelixPaul/Downloads/chromedriver");
+		
+		ChromeOptions cOptions = new ChromeOptions();
+		cOptions.addArguments("disable-infobars");
+		WebDriver chromedriver = new ChromeDriver(cOptions);
+		WebDriverWait wait = new WebDriverWait(chromedriver, 60);
+		
+			loginToSalesforce(chromedriver, wait);
+			selectGitAccessRequest(chromedriver, wait);
+			valueGitHubUserName = (readData(filePath,fileName,usrsheetName)).stream().collect(Collectors.toList());
+			valueRepoName = (readData(filePath,fileName,reposheetName)).stream().collect(Collectors.toList());
+			requestSubmission (chromedriver,wait);
+			logoutSalesforce(chromedriver, wait);
+			cleanUp(chromedriver);
+		
+	}
+
+// Pre-check: The GitHub handle provided should be a valid one
+// Proceed further if only the request is successful and if 404 occurs 
+// notify such users
+		
+	
+	public static Boolean verifyHandle(String githubHandle) throws IOException{
+		URL url = new URL("https://github.com/"+githubHandle);
+		HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+		connection.setRequestMethod("GET");
+		connection.connect();
+		
+		int statusCode = connection.getResponseCode();
+		
+		if (statusCode != 404){
+			return true;
+		}
+		
+			return false;
+	}
+	public static void loginToSalesforce(WebDriver chromedriver, WebDriverWait wait){
+		chromedriver.get(URL);
+		// make this below line active when deploying to production
+		// wait.until(ExpectedConditions.elementToBeClickable(By.xpath(loginLink))).click();
+		chromedriver.findElement(By.xpath(username)).sendKeys(usernameValue);
+		chromedriver.findElement(By.xpath(password)).sendKeys(passwordValue);
+		chromedriver.findElement(By.xpath(loginButton)).click();
+	}
+	
+	
+	public static void selectGitAccessRequest(WebDriver chromedriver, WebDriverWait wait){
+		wait.until(ExpectedConditions.elementToBeClickable(By.xpath(ddHomePage)));
+		boolean elementLink = chromedriver.findElement(By.xpath("//*[text()='Github Access Request']")).isDisplayed();		
+		if ( elementLink ){
+			//There won't be any selection needed
+		}
+		
+		else {
+			chromedriver.findElement(By.xpath(ddHomePage)).click();
+			chromedriver.findElement(By.linkText(gitHubLink)).click();
+		}
+	}
+	
+	public static void requestSubmission (WebDriver chromedriver, WebDriverWait wait) throws IOException{
+		
+		for (String repo : valueRepoName){
+			
+			for (String username : valueGitHubUserName ){
+				
+				if (verifyHandle(username)){
+					wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Github Requests"))).click();
+					wait.until(ExpectedConditions.elementToBeClickable(By.xpath(giHubHomePageNewbtn))).click();
+					wait.until(ExpectedConditions.elementToBeClickable(By.xpath(txtSalesForceUser))).sendKeys(valueSalesForceUser);
+					wait.until(ExpectedConditions.elementToBeClickable(By.xpath(txtGitHubUserName))).sendKeys(username);
+					wait.until(ExpectedConditions.elementToBeClickable(By.xpath(txtGitHubRepoName))).sendKeys(repo);
+					if (username.toLowerCase().equals("sysco-qa")){
+						wait.until(ExpectedConditions.elementToBeClickable(By.xpath(chkboxNewGitHubRepo))).click();
+					}	
+					WebElement accessElement = chromedriver.findElement(By.xpath(ddAccessLevel));
+					WebElement durationElement = chromedriver.findElement(By.xpath(ddDuration));
+					Select accessDD = new Select(accessElement);
+					Select durationDD = new Select(durationElement);
+					
+					accessDD.selectByValue("Write");
+					durationDD.selectByValue("360");
+					
+					chromedriver.findElement(By.xpath(btnSave)).click();	
+					
+					wait.until(ExpectedConditions.elementToBeClickable(By.xpath(btnSubmitForApproval))).click();
+					chromedriver.switchTo().alert().accept();
+					System.out.println("Access Requested successfully created for githubuserHandle" + " " + username + ":" + "Repo" + "-" + repo);
+				}
+				else {
+					System.out.println("This is an invalid githubuserHandle" +" " +  username + ":" + "Repo" + "-" + repo );
+					
+					
+				}
+				
+			}
+		}
+		
+		
+		
+	}
+	
+	public static void logoutSalesforce (WebDriver chromedriver, WebDriverWait wait){
+		wait.until(ExpectedConditions.elementToBeClickable(By.xpath(btnLogout))).click();
+		wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Logout"))).click();
+	}
+	
+	public static void cleanUp (WebDriver chromedriver){
+		chromedriver.close();
+		chromedriver.quit();
+	}
+	
+	public static List<String> readData (String filePath, String fileName, String sheetName) throws IOException {
+		
+		File file = new File(filePath+File.separator+fileName);
+		FileInputStream fileRead = new FileInputStream(file);
+		List<String> listValues = new ArrayList <String>();
+		
+		XSSFWorkbook wb = new XSSFWorkbook(fileRead);
+		XSSFSheet sheet = wb.getSheet(sheetName);
+		Iterator<Row> rows = sheet.rowIterator();
+		
+		while (rows.hasNext()){
+			XSSFRow row = (XSSFRow) rows.next();
+			if (row.getRowNum() == 0) {
+				continue;
+			}
+			Iterator<Cell> cells = row.cellIterator ();
+			
+			while (cells.hasNext()){
+				XSSFCell cell = (XSSFCell) cells.next();
+				listValues.add(cell.getStringCellValue());				
+			}
+		}
+		return listValues;
+		
+		
+		
+	}
+	
+}
