@@ -1,0 +1,49 @@
+import sys
+
+gameBoard = {'top-l' : ' ', 'top-m' : ' ', 'top-r' : ' ',
+              'mid-l' : ' ', 'mid-m' : ' ', 'mid-r' : ' ',
+              'low-l' : ' ', 'low-m' : ' ', 'low-r' : ' '}
+
+
+def displaygameBoard(gameBoard):
+    print '''
+    %s | %s | %s
+    ------------
+    %s | %s | %s
+    ------------
+    %s | %s | %s
+    ''' % (gameBoard['top-l'],gameBoard['top-m'],gameBoard['top-r'],
+    gameBoard['mid-l'],gameBoard['mid-m'],gameBoard['mid-r'],
+    gameBoard['low-l'],gameBoard['low-m'],gameBoard['low-r'])
+
+
+
+
+
+def getUserInput():
+    print "Do you want to play the game :"
+    answer = raw_input('-->').lower()
+    if answer == 'n':
+        sys.exit()
+    else:
+        print "Let's start our game, please select your choice 'X' or 'O'"
+    while True:
+        selection = raw_input('-->').lower()
+        if selection not in ['x','o']:
+            print "Please select correct option"
+            continue
+        else:
+            print " Ok, your option would be '%s', Good luck !" %selection
+            displaygameBoard(gameBoard)
+            break
+    return selection
+
+def gameEngine(gameBoard):
+    getUserInput
+    #Test the code here
+
+
+displaygameBoard(gameBoard)
+gameEngine(gameBoard)
+selection = getUserInput()
+print selection
