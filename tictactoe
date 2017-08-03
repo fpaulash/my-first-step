@@ -4,6 +4,16 @@ gameBoard = {'top-l' : ' ', 'top-m' : ' ', 'top-r' : ' ',
               'mid-l' : ' ', 'mid-m' : ' ', 'mid-r' : ' ',
               'low-l' : ' ', 'low-m' : ' ', 'low-r' : ' '}
 
+magicSquarep1 = {'top-l' : 0 , 'top-m' : 0 , 'top-r' : 0 ,
+              'mid-l' : 0 , 'mid-m' : 0 , 'mid-r' : 0 ,
+              'low-l' : 0 , 'low-m' : 0 , 'low-r' : 0 }
+
+magicSquarep2 = {'top-l' : 0 , 'top-m' : 0 , 'top-r' : 0 ,
+              'mid-l' : 0 , 'mid-m' : 0 , 'mid-r' : 0 ,
+              'low-l' : 0 , 'low-m' : 0 , 'low-r' : 0 }
+
+player1 = ''
+player2 = ''
 
 def displaygameBoard(gameBoard):
     print '''
@@ -21,6 +31,7 @@ def displaygameBoard(gameBoard):
 
 
 def getUserInput():
+    global player1, player2
     print "Do you want to play the game :"
     answer = raw_input('-->').lower()
     if answer == 'n':
@@ -28,22 +39,71 @@ def getUserInput():
     else:
         print "Let's start our game, please select your choice 'X' or 'O'"
     while True:
-        selection = raw_input('-->').lower()
-        if selection not in ['x','o']:
+        player1 = raw_input('-->').lower()
+        if player1 not in ['x','o']:
             print "Please select correct option"
             continue
         else:
-            print " Ok, your option would be '%s', Good luck !" %selection
+            print " Ok, player1 option '%s', Good luck !" %player1
+            if player1 == 'x' :
+                 player2 = 'o'
+            else:
+                 player2 = 'x'
+            print " Player 2 option is '%s', Good luck !" %player2
             displaygameBoard(gameBoard)
             break
-    return selection
+
 
 def gameEngine(gameBoard):
-    getUserInput
-    #Test the code here
+    getUserInput()
+    currentplayer = [player1,player2]
+    i=1
+    positionlist=[]
+    while True:
+        activeplayer = toggle(i)
+        print "please enter the cell position for player '%s'" %currentplayer[activeplayer]
+        position = raw_input('-->')
+        if position not in gameBoard.keys():
+            print " Please enter correct position"
+            continue
+        if position in positionlist:
+            print " This position is already taken. Please enter different position"
+            continue
+        else:
+            positionlist.append(position)
+        gameBoard[position]=currentplayer[activeplayer]
+        displaygameBoard(gameBoard)
+        if currentplayer[activeplayer] == 'x':
+                magicSquarep1[position] = 1
+                if  checkResult (magicSquarep1):
+                    print "You won the game. Congrats player %s " %currentplayer[activeplayer]
+                    break
+        elif currentplayer[activeplayer] == 'o':
+                magicSquarep2[position] = -1
+                if checkResult (magicSquarep2):
+                    print "You won the game. Congrats player %s "%currentplayer[activeplayer]
+                    break
 
+        i = toggle(i)
+
+def toggle(value):
+    x = value
+    x ^= 1
+    return x
+
+def checkResult(magicSquarerep):
+    magicList = [(magicSquarerep['top-l'] + magicSquarerep['top-m'] + magicSquarerep['top-r']),
+    (magicSquarerep['mid-l'] + magicSquarerep['mid-m'] + magicSquarerep['mid-r']),
+    (magicSquarerep['low-l'] + magicSquarerep['low-m'] + magicSquarerep['low-r']),
+    (magicSquarerep['top-l'] + magicSquarerep['mid-l'] + magicSquarerep['low-l']),
+    (magicSquarerep['top-m'] + magicSquarerep['mid-m'] + magicSquarerep['low-m']),
+    (magicSquarerep['top-r'] + magicSquarerep['mid-r'] + magicSquarerep['low-r']),
+    (magicSquarerep['top-l'] + magicSquarerep['mid-m'] + magicSquarerep['low-r']),
+    (magicSquarerep['low-l'] + magicSquarerep['mid-m'] + magicSquarerep['top-r'])]
+    for result in magicList:
+        if result == 3 or result == -3:
+            return True
+    return False
 
 displaygameBoard(gameBoard)
 gameEngine(gameBoard)
-selection = getUserInput()
-print selection
